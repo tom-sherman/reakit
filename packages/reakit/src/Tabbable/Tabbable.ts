@@ -84,6 +84,7 @@ export const useTabbable = createHook<TabbableOptions, TabbableHTMLProps>({
         if (options.disabled) {
           event.stopPropagation();
         } else {
+          // if not focused already?
           (ref.current || (event.target as HTMLElement)).focus();
           if (htmlOnMouseDown) {
             htmlOnMouseDown(event);

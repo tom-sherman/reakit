@@ -2,7 +2,9 @@
   "private": true,
   "workspaces": {
     "packages": [
-      "packages/*"
+      "packages/*",
+      "examples/*",
+      "examples"
     ]
   },
   "scripts": {
@@ -12,8 +14,7 @@
     "postcoverage": "open-cli coverage/lcov-report/index.html",
     "type-check": "tsc --noEmit",
     "lint": "cross-env NODE_ENV=test eslint . --ext js,ts,tsx",
-    "storybook": "start-storybook -p 6006",
-    "storybook:build": "build-storybook",
+    "examples": "npm run start --prefix examples",
     "clean": "lerna exec --scope reakit* -- npm run clean",
     "build": "lerna exec --scope reakit* --concurrency 1 -- npm run build",
     "build:fast": "npm run build -- -- --no-umd",
@@ -50,14 +51,12 @@
     "@babel/preset-env": "7.4.5",
     "@babel/preset-react": "7.0.0",
     "@babel/preset-typescript": "7.3.3",
-    "@storybook/react": "5.1.9",
     "@testing-library/react": "8.0.4",
     "@testing-library/react-hooks": "1.0.4",
     "@types/jest": "24.0.15",
     "@types/prop-types": "15.7.1",
     "@types/react": "16.8.22",
     "@types/react-dom": "16.8.4",
-    "@types/storybook__react": "4.0.2",
     "@typescript-eslint/eslint-plugin": "1.11.0",
     "@typescript-eslint/parser": "1.11.0",
     "ast-to-markdown": "0.2.2",

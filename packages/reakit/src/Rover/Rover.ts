@@ -2,7 +2,6 @@ import * as React from "react";
 import { createComponent } from "reakit-system/createComponent";
 import { createHook } from "reakit-system/createHook";
 import { useId } from "reakit-utils/useId";
-import { useUpdateEffect } from "reakit-utils/useUpdateEffect";
 import { createOnKeyDown } from "reakit-utils/createOnKeyDown";
 import { warning } from "reakit-utils/warning";
 import { useAllCallbacks } from "reakit-utils/useAllCallbacks";
@@ -70,7 +69,7 @@ export const useRover = createHook<RoverOptions, RoverHTMLProps>({
       return () => options.unregister(stopId);
     }, [stopId, trulyDisabled, options.register, options.unregister]);
 
-    useUpdateEffect(() => {
+    React.useEffect(() => {
       if (!ref.current) {
         warning(
           true,
@@ -80,11 +79,16 @@ export const useRover = createHook<RoverOptions, RoverHTMLProps>({
         );
         return;
       }
-      if (document.activeElement !== ref.current && focused) {
+      if (
+        options.unstable_moves &&
+        document.activeElement !== ref.current &&
+        focused
+      ) {
         ref.current.focus();
       }
     }, [focused, options.unstable_moves]);
 
+    // stopPropagation? onFocusCapture?
     const onFocus = React.useCallback(() => options.move(stopId), [
       options.move,
       stopId
