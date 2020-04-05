@@ -22,10 +22,7 @@ jobs:
         node-version: 12
 
     - name: Install dependencies
-      run: yarn
-
-    - name: Upgrade to react@next
-      run: yarn upgrade react@next react-dom@next
+      run: yarn && yarn upgrade react@next react-dom@next
 
     - name: Lint
       run: yarn lint
