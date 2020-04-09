@@ -1,8 +1,6 @@
 name: react-next
 
 on:
-  push:
-    branches: [master, next, v*]
   schedule:
     # Runs at 00:00 UTC every day
     - cron: '0 0 * * *'
