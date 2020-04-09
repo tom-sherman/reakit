@@ -34,29 +34,13 @@ const useA = createHook({ name: "A", compose: useBox });
 #### Table of Contents
 
 -   [createComponent](#createcomponent)
-    -   [Parameters](#parameters)
-    -   [Examples](#examples)
 -   [createHook](#createhook)
-    -   [Parameters](#parameters-1)
-    -   [Examples](#examples-1)
 -   [mergeSystem](#mergesystem)
-    -   [Parameters](#parameters-2)
-    -   [Examples](#examples-2)
 -   [SystemProvider](#systemprovider)
-    -   [Parameters](#parameters-3)
-    -   [Examples](#examples-3)
 -   [useCreateElement](#usecreateelement)
-    -   [Parameters](#parameters-4)
-    -   [Examples](#examples-4)
 -   [useOptions](#useoptions)
-    -   [Parameters](#parameters-5)
-    -   [Examples](#examples-5)
 -   [useProps](#useprops)
-    -   [Parameters](#parameters-6)
-    -   [Examples](#examples-6)
 -   [useToken](#usetoken)
-    -   [Parameters](#parameters-7)
-    -   [Examples](#examples-7)
 
 ### createComponent
 
@@ -98,9 +82,9 @@ const useA = createHook({
   useProps(options, htmlProps) {
     return {
       ...htmlProps,
-      href: options.url
+      href: options.url,
     };
-  }
+  },
 });
 
 function A({ url, ...htmlProps }) {
@@ -125,7 +109,7 @@ import { mergeSystem } from "reakit-system";
 import * as bootstrapSystem from "reakit-system-bootstrap";
 
 const mySystem = {
-  useButtonProps() {}
+  useButtonProps() {},
 };
 
 const system = mergeSystem(bootstrapSystem, mySystem);
@@ -193,7 +177,7 @@ const system = {
       return children(rest);
     }
     return React.createElement(type, props, children);
-  }
+  },
 };
 
 function Component(props) {
@@ -232,9 +216,9 @@ const system = {
   useAOptions(options, htmlProps) {
     return {
       ...options,
-      url: htmlProps.href
+      url: htmlProps.href,
     };
-  }
+  },
 };
 
 function A({ url, ...htmlProps }) {
@@ -275,9 +259,9 @@ const system = {
   useAProps(options, htmlProps) {
     return {
       ...htmlProps,
-      href: options.url
+      href: options.url,
     };
-  }
+  },
 };
 
 function A({ url, ...htmlProps }) {
@@ -313,7 +297,7 @@ and [`useProps`](#useprops).
 import { SystemProvider, useToken } from "reakit-system";
 
 const system = {
-  token: "value"
+  token: "value",
 };
 
 function Component(props) {

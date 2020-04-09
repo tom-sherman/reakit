@@ -33,7 +33,7 @@ export const unstable_useIdGroup = createHook<
   useOptions(options, htmlProps) {
     const generateId = React.useContext(unstable_IdContext);
     const [baseId] = React.useState(
-      () => options.id || htmlProps.id || options.baseId || generateId()
+      () => htmlProps.id || options.id || options.baseId || generateId()
     );
 
     React.useEffect(() => {
@@ -48,12 +48,11 @@ export const unstable_useIdGroup = createHook<
   },
 
   useProps(options, htmlProps) {
-    const id = typeof htmlProps.id === "undefined" ? options.id : htmlProps.id;
-    return { ...htmlProps, id };
-  }
+    return { id: options.id, ...htmlProps };
+  },
 });
 
 export const unstable_IdGroup = createComponent({
   as: "div",
-  useHook: unstable_useIdGroup
+  useHook: unstable_useIdGroup,
 });

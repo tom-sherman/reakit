@@ -1,14 +1,13 @@
 import * as React from "react";
-import { warning } from "reakit-utils/warning";
+import { useWarning } from "reakit-warning";
 import { createComponent } from "reakit-system/createComponent";
 import { useCreateElement } from "reakit-system/useCreateElement";
 import { createOnKeyDown } from "reakit-utils/createOnKeyDown";
 import { createHook } from "reakit-system/createHook";
-import { useAllCallbacks } from "reakit-utils/useAllCallbacks";
 import {
   PopoverOptions,
   PopoverHTMLProps,
-  usePopover
+  usePopover,
 } from "../Popover/Popover";
 import { MenuBarOptions, MenuBarHTMLProps, useMenuBar } from "./MenuBar";
 import { useMenuState, MenuStateReturn } from "./MenuState";
@@ -16,7 +15,6 @@ import { MenuContext, MenuContextType } from "./__utils/MenuContext";
 
 export type MenuOptions = Omit<PopoverOptions, "hideOnEsc"> &
   Pick<MenuStateReturn, "placement"> &
-  Pick<Partial<MenuStateReturn>, "first" | "last"> &
   MenuBarOptions;
 
 export type MenuHTMLProps = PopoverHTMLProps & MenuBarHTMLProps;
@@ -38,14 +36,12 @@ export const useMenu = createHook<MenuOptions, MenuHTMLProps>({
       modal: false,
       ...options,
       // will be handled differently from usePopover/useDialog
-      hideOnEsc: false
+      hideOnEsc: false,
     };
   },
 
   useProps(options, { onKeyDown: htmlOnKeyDown, ...htmlProps }) {
     const parent = React.useContext(MenuContext);
-    const isHorizontal = options.orientation === "horizontal";
-    const isVertical = options.orientation === "vertical";
     const hasParent = Boolean(parent);
     let ancestorMenuBar: MenuContextType | undefined | null = parent;
 
@@ -57,84 +53,49 @@ export const useMenu = createHook<MenuOptions, MenuHTMLProps>({
     const ancestorIsHorizontal = orientation === "horizontal";
     const [dir] = (options.placement || "").split("-");
 
-    const rovingBindings = React.useMemo(
+    const onKeyDown = React.useMemo(
       () =>
         createOnKeyDown({
-          stopPropagation: event => {
-            // On Esc, only stop propagation if there's no parent menu
+          onKeyDown: htmlOnKeyDown,
+          stopPropagation: (event) => {
+            // On Esc, only stop propagation if there's no parent menu.
             // Otherwise, pressing Esc should close all menus
-            if (event.key === "Escape" && hasParent) return false;
-            return true;
+            return event.key !== "Escape" && hasParent;
           },
-          keyMap: event => {
-            const targetIsMenu = event.target === event.currentTarget;
-            return {
-              Escape: options.hide,
-              ArrowUp: targetIsMenu && !isHorizontal && options.last,
-              ArrowRight: targetIsMenu && !isVertical && options.first,
-              ArrowDown: targetIsMenu && !isHorizontal && options.first,
-              ArrowLeft: targetIsMenu && !isVertical && options.last,
-              Home: targetIsMenu && options.first,
-              End: targetIsMenu && options.last,
-              PageUp: targetIsMenu && options.first,
-              PageDown: targetIsMenu && options.last
-            };
-          }
-        }),
-      [
-        hasParent,
-        isHorizontal,
-        isVertical,
-        options.hide,
-        options.last,
-        options.first
-      ]
-    );
-
-    const parentBindings = React.useMemo(
-      () =>
-        createOnKeyDown({
-          stopPropagation: true,
-          shouldKeyDown: event => {
-            return Boolean(
-              // https://github.com/facebook/react/issues/11387
-              hasParent && event.currentTarget.contains(event.target as Element)
-            );
+          keyMap: ({ currentTarget, target }) => {
+            const Escape = options.hide;
+            if (hasParent && currentTarget.contains(target as Element)) {
+              // Moves to the next menu button in a horizontal menu bar or
+              // close the menu if it's a sub menu
+              const ArrowRight =
+                ancestorIsHorizontal && dir !== "left"
+                  ? next && (() => next())
+                  : dir === "left" && options.hide;
+              const ArrowLeft =
+                ancestorIsHorizontal && dir !== "right"
+                  ? previous && (() => previous())
+                  : dir === "right" && options.hide;
+              return { Escape, ArrowRight, ArrowLeft };
+            }
+            return { Escape };
           },
-          keyMap: hasParent
-            ? {
-                ArrowRight:
-                  ancestorIsHorizontal && dir !== "left"
-                    ? next
-                    : dir === "left" && options.hide,
-                ArrowLeft:
-                  ancestorIsHorizontal && dir !== "right"
-                    ? previous
-                    : dir === "right" && options.hide
-              }
-            : {}
         }),
       [hasParent, ancestorIsHorizontal, next, previous, dir, options.hide]
     );
 
-    return {
-      role: "menu",
-      onKeyDown: useAllCallbacks(rovingBindings, parentBindings, htmlOnKeyDown),
-      ...htmlProps
-    };
-  }
+    return { role: "menu", onKeyDown, ...htmlProps };
+  },
 });
 
 export const Menu = createComponent({
   as: "div",
   useHook: useMenu,
   useCreateElement: (type, props, children) => {
-    warning(
+    useWarning(
       !props["aria-label"] && !props["aria-labelledby"],
-      "[reakit/Menu]",
       "You should provide either `aria-label` or `aria-labelledby` props.",
       "See https://reakit.io/docs/menu"
     );
     return useCreateElement(type, props, children);
-  }
+  },
 });

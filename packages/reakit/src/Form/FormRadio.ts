@@ -46,26 +46,21 @@ export const unstable_useFormRadio = createHook<
     const name = options.name || htmlProps.name;
     const value =
       typeof options.value !== "undefined" ? options.value : htmlProps.value;
-    const rover = React.useContext(FormRadioGroupContext);
+    const composite = React.useContext(FormRadioGroupContext);
     const currentChecked = unstable_getIn(options.values, name);
     const checked = currentChecked === value;
 
-    if (!rover) {
+    if (!composite) {
       // TODO: Better error
       throw new Error("Missing FormRadioGroup");
     }
 
-    return { ...options, ...rover, checked, name, value };
+    return { ...options, ...composite, checked, name, value };
   },
 
   useProps(
     options,
-    {
-      onChange: htmlOnChange,
-      onBlur: htmlOnBlur,
-      onFocus: htmlOnFocus,
-      ...htmlProps
-    }
+    { onChange: htmlOnChange, onBlur: htmlOnBlur, ...htmlProps }
   ) {
     const onChange = React.useCallback(() => {
       options.update(options.name, options.value);
@@ -75,18 +70,13 @@ export const unstable_useFormRadio = createHook<
       options.blur(options.name);
     }, [options.blur, options.name]);
 
-    const onFocus = React.useCallback(() => {
-      options.update(options.name, options.value);
-    }, [options.update, options.name, options.value]);
-
     return {
       name: formatInputName(options.name),
       onChange: useAllCallbacks(onChange, htmlOnChange),
       onBlur: useAllCallbacks(onBlur, htmlOnBlur),
-      onFocus: useAllCallbacks(onFocus, htmlOnFocus),
-      ...htmlProps
+      ...htmlProps,
     };
-  }
+  },
 }) as <V, P extends DeepPath<V, P>>(
   options: unstable_FormRadioOptions<V, P>,
   htmlProps?: unstable_FormRadioHTMLProps
@@ -94,7 +84,7 @@ export const unstable_useFormRadio = createHook<
 
 export const unstable_FormRadio = (createComponent({
   as: "input",
-  useHook: unstable_useFormRadio
+  useHook: unstable_useFormRadio,
 }) as unknown) as <V, P extends DeepPath<V, P>, T extends As = "input">(
   props: PropsWithAs<unstable_FormRadioOptions<V, P>, T>
 ) => JSX.Element;

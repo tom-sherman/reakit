@@ -4,7 +4,7 @@ import { Disclosure } from "../Disclosure";
 
 const props: Parameters<typeof Disclosure>[0] = {
   toggle: jest.fn,
-  baseId: "test"
+  baseId: "test",
 };
 
 test("render", () => {
@@ -27,14 +27,14 @@ test("render visible", () => {
     </Disclosure>
   );
   expect(getByText("disclosure")).toMatchInlineSnapshot(`
-    <button
-      aria-controls="test"
-      aria-expanded="true"
-      type="button"
-    >
-      disclosure
-    </button>
-  `);
+<button
+  aria-controls="test"
+  aria-expanded="true"
+  type="button"
+>
+  disclosure
+</button>
+`);
 });
 
 test("render with aria-controls", () => {
@@ -44,14 +44,14 @@ test("render with aria-controls", () => {
     </Disclosure>
   );
   expect(getByText("disclosure")).toMatchInlineSnapshot(`
-    <button
-      aria-controls="a test"
-      aria-expanded="false"
-      type="button"
-    >
-      disclosure
-    </button>
-  `);
+<button
+  aria-controls="a test"
+  aria-expanded="false"
+  type="button"
+>
+  disclosure
+</button>
+`);
 });
 
 test("toggle", () => {

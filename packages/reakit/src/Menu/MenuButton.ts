@@ -4,10 +4,11 @@ import { createOnKeyDown } from "reakit-utils/createOnKeyDown";
 import { createHook } from "reakit-system/createHook";
 import { useForkRef } from "reakit-utils/useForkRef";
 import { useAllCallbacks } from "reakit-utils/useAllCallbacks";
+import { hasFocusWithin } from "reakit-utils/hasFocusWithin";
 import {
   PopoverDisclosureOptions,
   PopoverDisclosureHTMLProps,
-  usePopoverDisclosure
+  usePopoverDisclosure,
 } from "../Popover/PopoverDisclosure";
 import { useMenuState, MenuStateReturn } from "./MenuState";
 import { MenuContext } from "./__utils/MenuContext";
@@ -35,7 +36,7 @@ export const useMenuButton = createHook<MenuButtonOptions, MenuButtonHTMLProps>(
         onClick: htmlOnClick,
         onKeyDown: htmlOnKeyDown,
         onFocus: htmlOnFocus,
-        onMouseOver: htmlOnMouseOver,
+        onMouseEnter: htmlOnMouseEnter,
         onMouseDown: htmlOnMouseDown,
         ...htmlProps
       }
@@ -50,7 +51,8 @@ export const useMenuButton = createHook<MenuButtonOptions, MenuButtonHTMLProps>(
       const onKeyDown = React.useMemo(
         () =>
           createOnKeyDown({
-            stopPropagation: event => event.key !== "Escape",
+            onKeyDown: htmlOnKeyDown,
+            stopPropagation: (event) => event.key !== "Escape",
             onKey: options.show,
             keyMap: () => {
               // prevents scroll jump
@@ -63,21 +65,22 @@ export const useMenuButton = createHook<MenuButtonOptions, MenuButtonHTMLProps>(
                   dir === "top" || dir === "bottom" ? options.last : false,
                 ArrowRight: dir === "right" && first,
                 ArrowDown: dir === "bottom" || dir === "top" ? first : false,
-                ArrowLeft: dir === "left" && first
+                ArrowLeft: dir === "left" && first,
               };
-            }
+            },
           }),
         [
+          htmlOnKeyDown,
           dir,
           hasParent,
           options.show,
           options.hide,
           options.first,
-          options.last
+          options.last,
         ]
       );
 
-      const onMouseOver = React.useCallback(
+      const onMouseEnter = React.useCallback(
         (event: MouseEvent) => {
           // MenuButton's don't do anything on mouse over when they aren't
           // cointained within a Menu/MenuBar
@@ -88,9 +91,9 @@ export const useMenuButton = createHook<MenuButtonOptions, MenuButtonHTMLProps>(
           if (parentIsMenuBar) {
             // if MenuButton is an item inside a MenuBar, it'll only open
             // if there's already another sibling expanded MenuButton
-            const subjacentOpenMenu =
-              parent.ref.current &&
-              parent.ref.current.querySelector("[aria-expanded='true']");
+            const subjacentOpenMenu = parent.ref.current?.querySelector(
+              "[aria-expanded='true']"
+            );
             if (subjacentOpenMenu) {
               self.focus();
             }
@@ -98,11 +101,8 @@ export const useMenuButton = createHook<MenuButtonOptions, MenuButtonHTMLProps>(
             // If it's in a Menu, open after a short delay
             // TODO: Make the delay a prop?
             setTimeout(() => {
-              if (self.contains(document.activeElement)) {
-                options.show && options.show();
-                if (document.activeElement !== self) {
-                  self.focus();
-                }
+              if (hasFocusWithin(self)) {
+                options.show?.();
               }
             }, 200);
           }
@@ -110,42 +110,40 @@ export const useMenuButton = createHook<MenuButtonOptions, MenuButtonHTMLProps>(
         [parent, parentIsMenuBar, options.show]
       );
 
+      const onMouseDown = React.useCallback(() => {
+        // When in menu bar, the menu button can be activated either by focus
+        // or click, but we don't want both to trigger sequentially.
+        // Otherwise, onClick would toggle (hide) the menu right after it got
+        // shown on focus.
+        hasPressedMouse.current = true;
+      }, []);
+
+      const onFocus = React.useCallback(() => {
+        if (parentIsMenuBar && !hasPressedMouse.current) {
+          options.show?.();
+        }
+      }, [parentIsMenuBar, options.show]);
+
       // If disclosure is rendered as a menu bar item, it's toggable
       // That is, you can click on the expanded disclosure to close its menu.
       const onClick = React.useCallback(() => {
         if (hasParent && !parentIsMenuBar) {
-          options.show && options.show();
+          options.show?.();
         } else {
-          options.toggle && options.toggle();
+          options.toggle?.();
         }
         hasPressedMouse.current = false;
       }, [hasParent, parentIsMenuBar, options.show, options.toggle]);
 
-      const onFocus = React.useCallback(() => {
-        if (parentIsMenuBar && !hasPressedMouse.current) {
-          options.show && options.show();
-        }
-      }, [parentIsMenuBar, options.show]);
-
-      const onMouseDown = React.useCallback(() => {
-        if (parentIsMenuBar) {
-          // When in menu bar, the menu button can be activated either by focus
-          // or click, but we don't want both to trigger sequentially.
-          // Otherwise, onClick would toggle (hide) the menu right after it got
-          // shown on focus.
-          hasPressedMouse.current = true;
-        }
-      }, []);
-
       return {
         ref: useForkRef(ref, htmlRef),
         "aria-haspopup": "menu",
-        onKeyDown: useAllCallbacks(onKeyDown, htmlOnKeyDown),
-        onMouseOver: useAllCallbacks(onMouseOver, htmlOnMouseOver),
-        onClick: useAllCallbacks(onClick, htmlOnClick),
-        onFocus: useAllCallbacks(onFocus, htmlOnFocus),
+        onKeyDown,
+        onMouseEnter: useAllCallbacks(onMouseEnter, htmlOnMouseEnter),
         onMouseDown: useAllCallbacks(onMouseDown, htmlOnMouseDown),
-        ...htmlProps
+        onFocus: useAllCallbacks(onFocus, htmlOnFocus),
+        onClick: useAllCallbacks(onClick, htmlOnClick),
+        ...htmlProps,
       };
     },
 
@@ -153,13 +151,13 @@ export const useMenuButton = createHook<MenuButtonOptions, MenuButtonHTMLProps>(
       return {
         ...options,
         // Toggling is handled by MenuButton
-        toggle: noop
+        toggle: noop,
       };
-    }
+    },
   }
 );
 
 export const MenuButton = createComponent({
   as: "button",
-  useHook: useMenuButton
+  useHook: useMenuButton,
 });

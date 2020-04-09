@@ -47,18 +47,18 @@ test("render value", () => {
     />
   );
   expect(baseElement).toMatchInlineSnapshot(`
-    <body>
-      <div>
-        <input
-          aria-checked="true"
-          aria-invalid="false"
-          checked=""
-          name="a"
-          role="checkbox"
-          type="checkbox"
-          value="b"
-        />
-      </div>
-    </body>
-  `);
+<body>
+  <div>
+    <input
+      aria-checked="true"
+      aria-invalid="false"
+      checked=""
+      name="a"
+      role="checkbox"
+      type="checkbox"
+      value="b"
+    />
+  </div>
+</body>
+`);
 });

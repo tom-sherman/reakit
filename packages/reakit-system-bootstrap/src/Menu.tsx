@@ -4,11 +4,11 @@ import { MenuHTMLProps, MenuOptions } from "reakit/Menu/Menu";
 import { MenuButtonHTMLProps, MenuButtonOptions } from "reakit/Menu/MenuButton";
 import {
   MenuItemCheckboxHTMLProps,
-  MenuItemCheckboxOptions
+  MenuItemCheckboxOptions,
 } from "reakit/Menu/MenuItemCheckbox";
 import {
   MenuItemRadioHTMLProps,
-  MenuItemRadioOptions
+  MenuItemRadioOptions,
 } from "reakit/Menu/MenuItemRadio";
 import { MenuGroupHTMLProps, MenuGroupOptions } from "reakit/Menu/MenuGroup";
 import { MenuBarHTMLProps, MenuBarOptions } from "reakit/Menu/MenuBar";
@@ -29,6 +29,7 @@ export function useMenuBarProps(
   const isHorizontal = options.orientation === "horizontal";
 
   const menuBar = css`
+    position: relative;
     display: flex;
     flex-direction: ${isHorizontal ? "row" : "column"};
     white-space: nowrap;
@@ -81,7 +82,8 @@ export function useMenuItemProps(
         box-shadow: none !important;
       }
 
-      &:active {
+      &:active,
+      &[data-active] {
         background-color: ${darkPrimary} !important;
       }
     }
@@ -110,8 +112,8 @@ export function useMenuOptions({
       unstable_system,
       unstable_popoverStyles: {
         ...options.unstable_popoverStyles,
-        transform: `${transform} translate3d(0px, -0.3em, 0px)`
-      }
+        transform: `${transform} translate3d(0px, -0.3em, 0px)`,
+      },
     };
   }
 
@@ -139,7 +141,7 @@ export function useMenuProps(
   return {
     ...htmlProps,
     wrapElement: usePipe(wrapElement, htmlProps.wrapElement),
-    className: cx(menu, htmlProps.className)
+    className: cx(menu, htmlProps.className),
   };
 }
 
@@ -177,19 +179,19 @@ export function useMenuButtonProps(
           <svg viewBox="0 0 43.3 50">
             <polygon points="0 25 43.3 50 43.3 0 0 25" />
           </svg>
-        )
+        ),
       }[dir]
     : null;
 
-  const menuDisclosure = css`
+  const menuButton = css`
     position: relative;
 
     [role="menu"] > & {
       ${children &&
-        dir !== "left" &&
-        css`
-          padding-right: 2em !important;
-        `}
+      dir !== "left" &&
+      css`
+        padding-right: 2em !important;
+      `}
     }
 
     svg {
@@ -209,7 +211,7 @@ export function useMenuButtonProps(
       }
 
       ${children &&
-        css`
+      css`
           margin-${dir === "left" ? "right" : "left"}: 0.5em;
         `}
     }
@@ -227,7 +229,7 @@ export function useMenuButtonProps(
                 {child.props.children}
                 {svg}
               </>
-            )
+            ),
           });
         }
       ) : (
@@ -236,7 +238,7 @@ export function useMenuButtonProps(
           {svg}
         </>
       ),
-    className: cx(menuDisclosure, htmlProps.className)
+    className: cx(menuButton, htmlProps.className),
   };
 }
 

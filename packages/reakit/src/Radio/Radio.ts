@@ -2,10 +2,17 @@ import * as React from "react";
 import { createComponent } from "reakit-system/createComponent";
 import { createHook } from "reakit-system/createHook";
 import { useAllCallbacks } from "reakit-utils/useAllCallbacks";
-import { RoverOptions, RoverHTMLProps, useRover } from "../Rover/Rover";
+import { useLiveRef } from "reakit-utils/useLiveRef";
+import { useForkRef } from "reakit-utils/useForkRef";
+import { createEvent } from "reakit-utils/createEvent";
+import {
+  unstable_CompositeItemOptions as CompositeItemOptions,
+  unstable_CompositeItemHTMLProps as CompositeItemHTMLProps,
+  unstable_useCompositeItem as useCompositeItem,
+} from "../Composite/CompositeItem";
 import { useRadioState, RadioStateReturn } from "./RadioState";
 
-export type RadioOptions = RoverOptions &
+export type RadioOptions = CompositeItemOptions &
   Pick<Partial<RadioStateReturn>, "state" | "setState"> & {
     /**
      * Same as the `value` attribute.
@@ -15,41 +22,80 @@ export type RadioOptions = RoverOptions &
      * Same as the `checked` attribute.
      */
     checked?: boolean;
+    /**
+     * @private
+     */
+    unstable_checkOnFocus?: boolean;
   };
 
-export type RadioHTMLProps = RoverHTMLProps & React.InputHTMLAttributes<any>;
+export type RadioHTMLProps = CompositeItemHTMLProps &
+  React.InputHTMLAttributes<any>;
 
 export type RadioProps = RadioOptions & RadioHTMLProps;
 
+function getChecked(options: RadioOptions) {
+  if (typeof options.checked !== "undefined") {
+    return options.checked;
+  }
+  return options.value && options.state === options.value;
+}
+
+function useInitialChecked(options: RadioOptions) {
+  const [initialChecked] = React.useState(() => getChecked(options));
+  const [initialCurrentId] = React.useState(options.currentId);
+  const { id, setCurrentId } = options;
+
+  React.useEffect(() => {
+    if (initialChecked && id && initialCurrentId !== id) {
+      setCurrentId?.(id);
+    }
+  }, [initialChecked, id, setCurrentId, initialCurrentId]);
+}
+
+function fireChange(element: HTMLElement, onChange?: React.ChangeEventHandler) {
+  const event = createEvent(element, "change");
+  Object.defineProperties(event, {
+    type: { value: "change" },
+    target: { value: element },
+    currentTarget: { value: element },
+  });
+  onChange?.(event as any);
+}
+
 export const useRadio = createHook<RadioOptions, RadioHTMLProps>({
   name: "Radio",
-  compose: useRover,
+  compose: useCompositeItem,
   useState: useRadioState,
   keys: ["value", "checked"],
 
   useOptions(
-    { unstable_clickOnEnter = false, ...options },
+    { unstable_clickOnEnter = false, unstable_checkOnFocus = true, ...options },
     { value, checked }
   ) {
-    return { value, checked, unstable_clickOnEnter, ...options };
+    return {
+      value,
+      checked,
+      unstable_clickOnEnter,
+      unstable_checkOnFocus,
+      ...options,
+    };
   },
 
   useProps(
     options,
-    { onChange: htmlOnChange, onClick: htmlOnClick, ...htmlProps }
+    { ref: htmlRef, onChange: htmlOnChange, onClick: htmlOnClick, ...htmlProps }
   ) {
-    const checked =
-      typeof options.checked !== "undefined"
-        ? options.checked
-        : options.state === options.value;
+    const ref = React.useRef<HTMLElement>(null);
+    const checked = getChecked(options);
+    const isCurrentItemRef = useLiveRef(options.currentId === options.id);
+
+    useInitialChecked(options);
 
     const onChange = React.useCallback(
       (event: React.ChangeEvent) => {
-        if (htmlOnChange) {
-          htmlOnChange(event);
-        }
-        if (options.disabled || !options.setState) return;
-        options.setState(options.value);
+        htmlOnChange?.(event);
+        if (options.disabled || event.defaultPrevented) return;
+        options.setState?.(options.value);
       },
       [htmlOnChange, options.disabled, options.setState, options.value]
     );
@@ -58,12 +104,25 @@ export const useRadio = createHook<RadioOptions, RadioHTMLProps>({
       (event: React.MouseEvent) => {
         const self = event.currentTarget as HTMLElement;
         if (self.tagName === "INPUT") return;
-        onChange(event as any);
+        fireChange(self, onChange);
       },
-      [onChange]
+      [options.unstable_checkOnFocus, onChange]
     );
 
+    React.useEffect(() => {
+      const self = ref.current;
+      if (!self) return;
+      if (
+        options.unstable_moves &&
+        isCurrentItemRef.current &&
+        options.unstable_checkOnFocus
+      ) {
+        fireChange(self, onChange);
+      }
+    }, [options.unstable_moves, options.unstable_checkOnFocus, onChange]);
+
     return {
+      ref: useForkRef(ref, htmlRef),
       checked,
       "aria-checked": checked,
       value: options.value,
@@ -71,12 +130,12 @@ export const useRadio = createHook<RadioOptions, RadioHTMLProps>({
       type: "radio",
       onChange,
       onClick: useAllCallbacks(onClick, htmlOnClick),
-      ...htmlProps
+      ...htmlProps,
     };
-  }
+  },
 });
 
 export const Radio = createComponent({
   as: "input",
-  useHook: useRadio
+  useHook: useRadio,
 });

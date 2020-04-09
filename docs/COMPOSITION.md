@@ -6,7 +6,7 @@ redirect_from:
 
 # Composition
 
-Reakit has been built with composition in mind. In fact, its own components are composed by a few other abstract ones, like [Box](/docs/box/), [Tabbable](/docs/tabbable/) and [Rover](/docs/rover/).
+Reakit has been built with composition in mind. In fact, its own components are composed by a few other abstract ones, like [Box](/docs/box/), [Tabbable](/docs/tabbable/) and [Composite](/docs/composite/).
 
 The API isn't different. It's designed so you can create new things based on any existing module.
 
@@ -42,7 +42,7 @@ function Example() {
   const checkbox = useCheckboxState();
   return (
     <Button {...checkbox}>
-      {props => (
+      {(props) => (
         <Checkbox {...props} as="div">
           {checkbox.state ? "😄 Happy" : "😞 Sad"}
         </Checkbox>
@@ -81,7 +81,7 @@ State hooks are composable as well. For example, [`useTabState`](/docs/tab/) use
 
 ```jsx
 import React from "react";
-import { useDisclosureState, DisclosureRegion, Disclosure } from "reakit";
+import { useDisclosureState, DisclosureContent, Disclosure } from "reakit";
 
 function useDelayedDisclosureState({ delay, ...initialState } = {}) {
   const disclosure = useDisclosureState(initialState);
@@ -95,13 +95,13 @@ function useDelayedDisclosureState({ delay, ...initialState } = {}) {
         disclosure.toggle();
         setTransitioning(false);
       }, delay);
-    }
+    },
   };
 }
 
 function Example() {
   const { transitioning, ...disclosure } = useDelayedDisclosureState({
-    delay: 500
+    delay: 500,
   });
   return (
     <>
@@ -112,7 +112,7 @@ function Example() {
           ? "Hide with delay"
           : "Show with delay"}
       </Disclosure>
-      <DisclosureRegion {...disclosure}>Content</DisclosureRegion>
+      <DisclosureContent {...disclosure}>Content</DisclosureContent>
     </>
   );
 }

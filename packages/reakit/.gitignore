@@ -3,7 +3,6 @@
 /dist
 /es
 /ts
-/utils
 /VisuallyHidden
 /Tooltip
 /Toolbar
@@ -22,6 +21,8 @@
 /Form
 /Disclosure
 /Dialog
+/Composite
+/Clickable
 /Checkbox
 /Button
 /Box

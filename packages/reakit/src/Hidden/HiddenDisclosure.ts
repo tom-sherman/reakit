@@ -1,10 +1,10 @@
 import { createComponent } from "reakit-system/createComponent";
 import { createHook } from "reakit-system/createHook";
-import { warning } from "reakit-utils/warning";
+import { warning } from "reakit-warning";
 import {
   DisclosureOptions,
   DisclosureHTMLProps,
-  useDisclosure
+  useDisclosure,
 } from "../Disclosure/Disclosure";
 import { useHiddenState } from "./HiddenState";
 
@@ -26,15 +26,14 @@ export const useHiddenDisclosure = createHook<
   useProps(_, htmlProps) {
     warning(
       true,
-      "[reakit/HiddenDisclosure]",
       "`HiddenDisclosure` has been renamed to `Disclosure`. Using `<HiddenDisclosure />` will no longer work in future versions.",
       "See https://reakit.io/docs/disclosure"
     );
     return htmlProps;
-  }
+  },
 });
 
 export const HiddenDisclosure = createComponent({
   as: "button",
-  useHook: useHiddenDisclosure
+  useHook: useHiddenDisclosure,
 });

@@ -24,111 +24,61 @@ yarn add reakit-utils
 
 #### Table of Contents
 
+-   [applyState](#applystate)
 -   [closest](#closest)
-    -   [Parameters](#parameters)
-    -   [Examples](#examples)
+-   [createEvent](#createevent)
+-   [createKeyboardEvent](#createkeyboardevent)
 -   [createOnKeyDown](#createonkeydown)
-    -   [Parameters](#parameters-1)
 -   [cx](#cx)
-    -   [Parameters](#parameters-2)
-    -   [Examples](#examples-1)
+-   [fireEvent](#fireevent)
+-   [fireKeyboardEvent](#firekeyboardevent)
+-   [flatten](#flatten)
 -   [getActiveElement](#getactiveelement)
-    -   [Parameters](#parameters-3)
+-   [getDefaultView](#getdefaultview)
 -   [getDocument](#getdocument)
-    -   [Parameters](#parameters-4)
 -   [hasFocusWithin](#hasfocuswithin)
-    -   [Parameters](#parameters-5)
-    -   [Examples](#examples-2)
 -   [isButton](#isbutton)
-    -   [Parameters](#parameters-6)
-    -   [Examples](#examples-3)
 -   [isEmpty](#isempty)
-    -   [Parameters](#parameters-7)
-    -   [Examples](#examples-4)
 -   [isInteger](#isinteger)
-    -   [Parameters](#parameters-8)
-    -   [Examples](#examples-5)
 -   [isObject](#isobject)
-    -   [Parameters](#parameters-9)
 -   [isPlainObject](#isplainobject)
-    -   [Parameters](#parameters-10)
 -   [isPromise](#ispromise)
-    -   [Parameters](#parameters-11)
+-   [isTextField](#istextfield)
 -   [matches](#matches)
-    -   [Parameters](#parameters-12)
 -   [omit](#omit)
-    -   [Parameters](#parameters-13)
-    -   [Examples](#examples-6)
 -   [pick](#pick)
-    -   [Parameters](#parameters-14)
-    -   [Examples](#examples-7)
 -   [removeIndexFromArray](#removeindexfromarray)
-    -   [Parameters](#parameters-15)
-    -   [Examples](#examples-8)
 -   [removeItemFromArray](#removeitemfromarray)
-    -   [Parameters](#parameters-16)
-    -   [Examples](#examples-9)
 -   [splitProps](#splitprops)
-    -   [Parameters](#parameters-17)
-    -   [Examples](#examples-10)
 -   [tabbable](#tabbable)
-    -   [isFocusable](#isfocusable)
-        -   [Parameters](#parameters-18)
-        -   [Examples](#examples-11)
-    -   [isTabbable](#istabbable)
-        -   [Parameters](#parameters-19)
-        -   [Examples](#examples-12)
-    -   [getAllFocusableIn](#getallfocusablein)
-        -   [Parameters](#parameters-20)
-    -   [getFirstFocusableIn](#getfirstfocusablein)
-        -   [Parameters](#parameters-21)
-    -   [getAllTabbableIn](#getalltabbablein)
-        -   [Parameters](#parameters-22)
-    -   [getFirstTabbableIn](#getfirsttabbablein)
-        -   [Parameters](#parameters-23)
-    -   [getLastTabbableIn](#getlasttabbablein)
-        -   [Parameters](#parameters-24)
-    -   [getNextTabbableIn](#getnexttabbablein)
-        -   [Parameters](#parameters-25)
-    -   [getPreviousTabbableIn](#getprevioustabbablein)
-        -   [Parameters](#parameters-26)
-    -   [getClosestFocusable](#getclosestfocusable)
-        -   [Parameters](#parameters-27)
-    -   [ensureFocus](#ensurefocus)
-        -   [Parameters](#parameters-28)
-        -   [Examples](#examples-13)
 -   [toArray](#toarray)
-    -   [Parameters](#parameters-29)
-    -   [Examples](#examples-14)
 -   [types](#types)
-    -   [RenderProp](#renderprop)
-    -   [As](#as)
-    -   [ElementType](#elementtype)
-    -   [HTMLAttributesWithRef](#htmlattributeswithref)
-    -   [ExtractHTMLAttributes](#extracthtmlattributes)
-    -   [UnionToIntersection](#uniontointersection)
-    -   [PickByValue](#pickbyvalue)
-    -   [PropsWithAs](#propswithas)
-    -   [ArrayValue](#arrayvalue)
-    -   [AnyFunction](#anyfunction)
 -   [useAllCallbacks](#useallcallbacks)
-    -   [Parameters](#parameters-30)
-    -   [Examples](#examples-15)
 -   [useForkRef](#useforkref)
-    -   [Parameters](#parameters-31)
-    -   [Examples](#examples-16)
 -   [useIsomorphicEffect](#useisomorphiceffect)
 -   [useLiveRef](#useliveref)
-    -   [Parameters](#parameters-32)
 -   [usePipe](#usepipe)
-    -   [Parameters](#parameters-33)
 -   [useSealedState](#usesealedstate)
-    -   [Parameters](#parameters-34)
 -   [useUpdateEffect](#useupdateeffect)
-    -   [Parameters](#parameters-35)
--   [warning](#warning)
-    -   [Parameters](#parameters-36)
-    -   [Examples](#examples-17)
+
+### applyState
+
+Receives a `setState` argument and calls it with `currentValue` if it's a
+function. Otherwise return the argument as the new value.
+
+#### Parameters
+
+-   `argument` **React.SetStateAction&lt;T>** 
+-   `currentValue` **T** 
+
+#### Examples
+
+```javascript
+import { applyState } from "reakit-utils";
+
+applyState((value) => value + 1, 1); // 2
+applyState(2, 1); // 2
+```
 
 ### closest
 
@@ -148,6 +98,48 @@ closest(document.getElementById("id"), "div");
 // same as
 document.getElementById("id").closest("div");
 ```
+
+### createEvent
+
+Creates an `Event` in a way that also works on IE 11.
+
+#### Parameters
+
+-   `element` **[HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element)** 
+-   `type` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** 
+-   `eventInit` **EventInit**  (optional, default `{}`)
+
+#### Examples
+
+```javascript
+import { createEvent } from "reakit-utils";
+
+const el = document.getElementById("id");
+el.dispatchEvent(createEvent(el, "blur", { bubbles: false }));
+```
+
+Returns **[Event](https://developer.mozilla.org/docs/Web/API/Event)** 
+
+### createKeyboardEvent
+
+Creates a `KeyboardEvent` in a way that also works on IE 11.
+
+#### Parameters
+
+-   `element` **[HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element)** 
+-   `type` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** 
+-   `eventInit` **KeyboardEventInit**  (optional, default `{}`)
+
+#### Examples
+
+```javascript
+import { createKeyboardEvent } from "reakit-utils";
+
+const el = document.getElementById("id");
+el.dispatchEvent(createKeyboardEvent(el, "keydown", { key: "ArrowDown" }));
+```
+
+Returns **[KeyboardEvent](https://developer.mozilla.org/docs/Web/API/KeyboardEvent)** 
 
 ### createOnKeyDown
 
@@ -183,6 +175,65 @@ const className = cx("a", "b", false, true && "c");
 
 Returns **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [undefined](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined))** 
 
+### fireEvent
+
+Creates and dispatches `Event` in a way that also works on IE 11.
+
+#### Parameters
+
+-   `element` **[HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element)** 
+-   `type` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** 
+-   `eventInit` **EventInit** 
+
+#### Examples
+
+```javascript
+import { fireEvent } from "reakit-utils";
+
+fireEvent(document.getElementById("id"), "blur", {
+  bubbles: true,
+  cancelable: true,
+});
+```
+
+### fireKeyboardEvent
+
+Creates and dispatches `KeyboardEvent` in a way that also works on IE 11.
+
+#### Parameters
+
+-   `element` **[HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element)** 
+-   `type` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** 
+-   `eventInit` **KeyboardEventInit** 
+
+#### Examples
+
+```javascript
+import { fireKeyboardEvent } from "reakit-utils";
+
+fireKeyboardEvent(document.getElementById("id"), "keydown", {
+  key: "ArrowDown",
+  shiftKey: true,
+});
+```
+
+### flatten
+
+Transforms an array with multiple levels into a flattened one.
+
+#### Parameters
+
+-   `array` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;T>** 
+
+#### Examples
+
+```javascript
+import { flatten } from "reakit-utils";
+
+flatten([0, 1, [2, [3, 4], 5], 6]);
+// => [0, 1, 2, 3, 4, 5, 6]
+```
+
 ### getActiveElement
 
 Returns `element.ownerDocument.activeElement`.
@@ -190,6 +241,16 @@ Returns `element.ownerDocument.activeElement`.
 #### Parameters
 
 -   `element` **([Element](https://developer.mozilla.org/docs/Web/API/Element) \| [Document](https://developer.mozilla.org/docs/Web/API/Document) | null)?** 
+
+### getDefaultView
+
+Returns `element.ownerDocument.defaultView || window`.
+
+#### Parameters
+
+-   `element` **[Element](https://developer.mozilla.org/docs/Web/API/Element)?** 
+
+Returns **[Window](https://developer.mozilla.org/docs/Web/API/Window)** 
 
 ### getDocument
 
@@ -316,9 +377,21 @@ Checks whether `arg` is a promise or not.
 
 Returns **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** 
 
+### isTextField
+
+Check whether the given element is a text field, where text field is defined
+by the ability to select within the input, or that it is contenteditable.
+
+#### Parameters
+
+-   `element` **[HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element)** 
+
+Returns **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** 
+
 ### matches
 
--   **See: <https://developer.mozilla.org/en-US/docs/Web/API/Element/matches>**
+-   **See: <https://developer.mozilla.org/en-US/docs/Web/API/Element/matches>
+    **
 
 Ponyfill for `Element.prototype.matches`
 
@@ -771,24 +844,6 @@ A `React.useEffect` that will not run on the first render.
 
 -   `effect` **React.EffectCallback** 
 -   `deps` **(ReadonlyArray&lt;any> | [undefined](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined))?** 
-
-### warning
-
-Logs `messages` to the console using `console.warn` based on a `condition`.
-
-#### Parameters
-
--   `condition` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** 
--   `messages` **...[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** 
-
-#### Examples
-
-```javascript
-import { warning } from "reakit-utils";
-
-warning(true, "a", "b"); // console.warn("a\nb")
-warning(false, "a", "b"); // does nothing
-```
 
 ## License
 

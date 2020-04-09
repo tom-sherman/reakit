@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useLiveRef } from "reakit-utils/useLiveRef";
-import { warning } from "reakit-utils/warning";
+import { warning } from "reakit-warning";
 import { getDocument } from "reakit-utils/getDocument";
 import { isFocusTrap } from "./useFocusTrap";
 
@@ -22,6 +22,18 @@ function dialogContains(target: Element) {
     }
 
     return false;
+  };
+}
+
+function isDisclosure(target: Element) {
+  return (disclosure: HTMLElement) => {
+    if (disclosure.contains(target)) {
+      return true;
+    }
+    return (
+      disclosure.id &&
+      disclosure.id === target.getAttribute("aria-activedescendant")
+    );
   };
 }
 
@@ -48,7 +60,6 @@ export function useEventListenerOutside(
       if (!container) {
         warning(
           true,
-          "[reakit/Dialog]",
           "Can't detect events outside dialog because `ref` wasn't passed to component.",
           "See https://reakit.io/docs/dialog"
         );
@@ -59,10 +70,7 @@ export function useEventListenerOutside(
       if (container.contains(target)) return;
 
       // Click on disclosure
-      if (
-        disclosures.length &&
-        disclosures.some(disclosure => disclosure.contains(target))
-      ) {
+      if (disclosures.length && disclosures.some(isDisclosure(target))) {
         return;
       }
 
@@ -74,8 +82,8 @@ export function useEventListenerOutside(
       listenerRef.current(event);
     };
 
+    const document = getDocument(containerRef.current);
     document.addEventListener(eventType, handleEvent, true);
-
     return () => {
       document.removeEventListener(eventType, handleEvent, true);
     };
@@ -85,6 +93,6 @@ export function useEventListenerOutside(
     nestedDialogs,
     eventType,
     shouldListen,
-    listenerRef
+    listenerRef,
   ]);
 }

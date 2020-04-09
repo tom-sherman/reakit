@@ -1,5 +1,5 @@
 import * as React from "react";
-import { warning } from "reakit-utils/warning";
+import { warning, useWarning } from "reakit-warning";
 import { createComponent } from "reakit-system/createComponent";
 import { useCreateElement } from "reakit-system/useCreateElement";
 import { createHook } from "reakit-system/createHook";
@@ -7,10 +7,10 @@ import { useForkRef } from "reakit-utils/useForkRef";
 import { useAllCallbacks } from "reakit-utils/useAllCallbacks";
 import { usePipe } from "reakit-utils/usePipe";
 import {
-  DisclosureRegionOptions,
-  DisclosureRegionHTMLProps,
-  useDisclosureRegion
-} from "../Disclosure/DisclosureRegion";
+  DisclosureContentOptions,
+  DisclosureContentHTMLProps,
+  useDisclosureContent,
+} from "../Disclosure/DisclosureContent";
 import { Portal } from "../Portal/Portal";
 import { useDisclosuresRef } from "./__utils/useDisclosuresRef";
 import { usePreventBodyScroll } from "./__utils/usePreventBodyScroll";
@@ -23,7 +23,7 @@ import { useDialogState, DialogStateReturn } from "./DialogState";
 import { useDisableHoverOutside } from "./__utils/useDisableHoverOutside";
 import { DialogBackdropContext } from "./__utils/DialogBackdropContext";
 
-export type DialogOptions = DisclosureRegionOptions &
+export type DialogOptions = DisclosureContentOptions &
   Pick<
     Partial<DialogStateReturn>,
     "modal" | "setModal" | "unstable_modal" | "hide"
@@ -71,13 +71,13 @@ export type DialogOptions = DisclosureRegionOptions &
     unstable_autoFocusOnHide?: boolean;
   };
 
-export type DialogHTMLProps = DisclosureRegionHTMLProps;
+export type DialogHTMLProps = DisclosureContentHTMLProps;
 
 export type DialogProps = DialogOptions & DialogHTMLProps;
 
 export const useDialog = createHook<DialogOptions, DialogHTMLProps>({
   name: "Dialog",
-  compose: useDisclosureRegion,
+  compose: useDisclosureContent,
   useState: useDialogState,
   keys: [
     "hideOnEsc",
@@ -87,7 +87,7 @@ export const useDialog = createHook<DialogOptions, DialogHTMLProps>({
     "unstable_finalFocusRef",
     "unstable_orphan",
     "unstable_autoFocusOnShow",
-    "unstable_autoFocusOnHide"
+    "unstable_autoFocusOnHide",
   ],
 
   useOptions({
@@ -106,7 +106,6 @@ export const useDialog = createHook<DialogOptions, DialogHTMLProps>({
       if (setModal && unstable_modal !== modal) {
         warning(
           true,
-          "[reakit/Dialog]",
           "Setting `modal` prop on `Dialog` is deprecated. Set it on `useDialogState` instead.",
           "See https://github.com/reakit/reakit/pull/535"
         );
@@ -122,7 +121,7 @@ export const useDialog = createHook<DialogOptions, DialogHTMLProps>({
       unstable_autoFocusOnShow,
       unstable_autoFocusOnHide,
       unstable_orphan: modal && unstable_orphan,
-      ...options
+      ...options,
     };
   },
 
@@ -137,11 +136,15 @@ export const useDialog = createHook<DialogOptions, DialogHTMLProps>({
   ) {
     const dialog = React.useRef<HTMLElement>(null);
     const backdrop = React.useContext(DialogBackdropContext);
-    const disclosures = useDisclosuresRef(options);
-    const { dialogs, wrap } = useNestedDialogs(dialog, options);
+    const disclosures = useDisclosuresRef(dialog, options);
+    const { dialogs, visibleModals, wrap } = useNestedDialogs(dialog, options);
+    // VoiceOver/Safari accepts only one `aria-modal` container, so if there
+    // are visible child modals, then we don't want to set aria-modal on the
+    // parent modal (this component).
+    const modal = options.modal && !visibleModals.length ? true : undefined;
 
     usePreventBodyScroll(dialog, options);
-    useFocusTrap(dialog, dialogs, options);
+    useFocusTrap(dialog, visibleModals, options);
     useFocusOnShow(dialog, dialogs, options);
     useFocusOnHide(dialog, disclosures, options);
     useHideOnClickOutside(dialog, disclosures, dialogs, options);
@@ -153,9 +156,9 @@ export const useDialog = createHook<DialogOptions, DialogHTMLProps>({
           if (!options.hide) {
             warning(
               true,
-              "[reakit/Dialog]",
               "`hideOnEsc` prop is truthy, but `hide` prop wasn't provided.",
-              "See https://reakit.io/docs/dialog"
+              "See https://reakit.io/docs/dialog",
+              dialog.current
             );
             return;
           }
@@ -182,23 +185,22 @@ export const useDialog = createHook<DialogOptions, DialogHTMLProps>({
       tabIndex: -1,
       onKeyDown: useAllCallbacks(onKeyDown, htmlOnKeyDown),
       wrapElement: usePipe(wrapElement, htmlWrapElement),
-      "aria-modal": options.modal ? true : undefined,
+      "aria-modal": modal,
       "data-dialog": true,
-      ...htmlProps
+      ...htmlProps,
     };
-  }
+  },
 });
 
 export const Dialog = createComponent({
   as: "div",
   useHook: useDialog,
   useCreateElement: (type, props, children) => {
-    warning(
+    useWarning(
       !props["aria-label"] && !props["aria-labelledby"],
-      "[reakit/Dialog]",
       "You should provide either `aria-label` or `aria-labelledby` props.",
       "See https://reakit.io/docs/dialog"
     );
     return useCreateElement(type, props, children);
-  }
+  },
 });

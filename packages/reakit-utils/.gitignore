@@ -3,7 +3,6 @@
 /dist
 /es
 /ts
-/warning
 /useUpdateEffect
 /useSealedState
 /usePipe
@@ -21,6 +20,7 @@
 /pick
 /omit
 /matches
+/isTextField
 /isPromise
 /isPlainObject
 /isObject
@@ -29,7 +29,14 @@
 /isButton
 /hasFocusWithin
 /getDocument
+/getDefaultView
 /getActiveElement
+/flatten
+/fireKeyboardEvent
+/fireEvent
 /cx
 /createOnKeyDown
+/createKeyboardEvent
+/createEvent
 /closest
+/applyState

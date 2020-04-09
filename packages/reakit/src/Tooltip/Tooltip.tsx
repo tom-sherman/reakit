@@ -4,14 +4,14 @@ import { createHook } from "reakit-system/createHook";
 import { useForkRef } from "reakit-utils/useForkRef";
 import { usePipe } from "reakit-utils/usePipe";
 import {
-  DisclosureRegionOptions,
-  DisclosureRegionHTMLProps,
-  useDisclosureRegion
-} from "../Disclosure/DisclosureRegion";
+  DisclosureContentOptions,
+  DisclosureContentHTMLProps,
+  useDisclosureContent,
+} from "../Disclosure/DisclosureContent";
 import { Portal } from "../Portal/Portal";
 import { TooltipStateReturn, useTooltipState } from "./TooltipState";
 
-export type TooltipOptions = DisclosureRegionOptions &
+export type TooltipOptions = DisclosureContentOptions &
   Pick<
     Partial<TooltipStateReturn>,
     "unstable_popoverRef" | "unstable_popoverStyles"
@@ -23,20 +23,20 @@ export type TooltipOptions = DisclosureRegionOptions &
     unstable_portal?: boolean;
   };
 
-export type TooltipHTMLProps = DisclosureRegionHTMLProps;
+export type TooltipHTMLProps = DisclosureContentHTMLProps;
 
 export type TooltipProps = TooltipOptions & TooltipHTMLProps;
 
 export const useTooltip = createHook<TooltipOptions, TooltipHTMLProps>({
   name: "Tooltip",
-  compose: useDisclosureRegion,
+  compose: useDisclosureContent,
   useState: useTooltipState,
   keys: ["unstable_portal"],
 
   useOptions({ unstable_portal = true, ...options }) {
     return {
       unstable_portal,
-      ...options
+      ...options,
     };
   },
 
@@ -65,15 +65,15 @@ export const useTooltip = createHook<TooltipOptions, TooltipHTMLProps>({
       style: {
         ...options.unstable_popoverStyles,
         pointerEvents: "none",
-        ...htmlStyle
+        ...htmlStyle,
       },
       wrapElement: usePipe(wrapElement, htmlWrapElement),
-      ...htmlProps
+      ...htmlProps,
     };
-  }
+  },
 });
 
 export const Tooltip = createComponent({
   as: "div",
-  useHook: useTooltip
+  useHook: useTooltip,
 });

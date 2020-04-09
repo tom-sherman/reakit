@@ -24,10 +24,7 @@ test("group checkbox", async () => {
     const checkbox = useCheckboxState({ state: ["orange"] });
     return (
       <div role="group">
-        <label>
-          <Checkbox {...checkbox} as="div" value="apple" />
-          apple
-        </label>
+        <Checkbox {...checkbox} as="div" aria-label="apple" value="apple" />
         <label>
           <Checkbox {...checkbox} value="orange" />
           orange
@@ -60,7 +57,7 @@ test("checkbox onChange checked value", async () => {
       <label>
         <Checkbox
           {...checkbox}
-          onChange={event => onChange(event.target.checked)}
+          onChange={(event) => onChange(event.target.checked)}
         />
         checkbox
       </label>
@@ -83,14 +80,12 @@ test("non-native checkbox onChange checked value", async () => {
   const Test = () => {
     const checkbox = useCheckboxState();
     return (
-      <label>
-        <Checkbox
-          as="div"
-          {...checkbox}
-          onChange={(event: any) => onChange(event.target.checked)}
-        />
-        checkbox
-      </label>
+      <Checkbox
+        {...checkbox}
+        as="div"
+        aria-label="checkbox"
+        onChange={(event: any) => onChange(event.target.checked)}
+      />
     );
   };
   const { getByLabelText } = render(<Test />);
@@ -113,7 +108,7 @@ test("checkbox onChange checked value without useCheckboxState", async () => {
       <label>
         <Checkbox
           checked={checked}
-          onChange={event => {
+          onChange={(event) => {
             setChecked(event.target.checked);
             onChange(event.target.checked);
           }}
@@ -139,17 +134,15 @@ test("non-native checkbox onChange checked value without useCheckboxState", asyn
   const Test = () => {
     const [checked, setChecked] = React.useState(false);
     return (
-      <label>
-        <Checkbox
-          as="div"
-          checked={checked}
-          onChange={(event: any) => {
-            setChecked(event.target.checked);
-            onChange(event.target.checked);
-          }}
-        />
-        checkbox
-      </label>
+      <Checkbox
+        as="div"
+        aria-label="checkbox"
+        checked={checked}
+        onChange={(event: any) => {
+          setChecked(event.target.checked);
+          onChange(event.target.checked);
+        }}
+      />
     );
   };
   const { getByLabelText } = render(<Test />);
@@ -172,7 +165,7 @@ test("useCheckbox", () => {
       {
         checked,
         onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
-          setChecked(event.target.checked)
+          setChecked(event.target.checked),
       }
     );
     return (

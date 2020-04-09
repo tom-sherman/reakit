@@ -1,9 +1,9 @@
 import {
   getPreviousTabbableIn,
   getNextTabbableIn,
-  isFocusable
+  isFocusable,
+  isTextField,
 } from "reakit-utils";
-import { isTextField } from "./__utils/isTextField";
 import { fireEvent } from "./fireEvent";
 import { focus } from "./focus";
 import { blur } from "./blur";
@@ -16,7 +16,7 @@ const clickableInputTypes = [
   "file",
   "image",
   "reset",
-  "submit"
+  "submit",
 ];
 
 function submitFormByPressingEnterOn(
@@ -29,11 +29,11 @@ function submitFormByPressingEnterOn(
   const elements = Array.from(form.elements);
 
   const validInputs = elements.filter(
-    el => el instanceof HTMLInputElement && isTextField(el)
+    (el) => el instanceof HTMLInputElement && isTextField(el)
   );
 
   const submitButton = elements.find(
-    el =>
+    (el) =>
       (el instanceof HTMLInputElement || el instanceof HTMLButtonElement) &&
       el.type === "submit"
   );
@@ -69,12 +69,16 @@ const keyDownMap: Record<
       element instanceof HTMLInputElement &&
       !nonSubmittableTypes.includes(element.type);
 
+    const isLineBreakable = element instanceof HTMLTextAreaElement;
+
     if (isClickable) {
       fireEvent.click(element, options);
+    } else if (isLineBreakable) {
+      (element as HTMLTextAreaElement).value += "\n";
     } else if (isSubmittable) {
       submitFormByPressingEnterOn(element as HTMLInputElement, options);
     }
-  }
+  },
 };
 
 const keyUpMap: Record<
@@ -93,7 +97,7 @@ const keyUpMap: Record<
     if (isSpaceable) {
       fireEvent.click(element, options);
     }
-  }
+  },
 };
 
 export function press(
@@ -146,6 +150,8 @@ function createPress(key: string, defaultOptions: KeyboardEventInit = {}) {
 }
 
 press.Escape = createPress("Escape");
+press.Backspace = createPress("Backspace");
+press.Delete = createPress("Delete");
 press.Tab = createPress("Tab");
 press.ShiftTab = createPress("Tab", { shiftKey: true });
 press.Enter = createPress("Enter");

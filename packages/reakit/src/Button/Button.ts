@@ -4,21 +4,21 @@ import { createHook } from "reakit-system/createHook";
 import { useForkRef } from "reakit-utils/useForkRef";
 import { isButton } from "reakit-utils/isButton";
 import {
-  TabbableOptions,
-  TabbableHTMLProps,
-  useTabbable
-} from "../Tabbable/Tabbable";
+  ClickableOptions,
+  ClickableHTMLProps,
+  useClickable,
+} from "../Clickable/Clickable";
 
-export type ButtonOptions = TabbableOptions;
+export type ButtonOptions = ClickableOptions;
 
-export type ButtonHTMLProps = TabbableHTMLProps &
+export type ButtonHTMLProps = ClickableHTMLProps &
   React.ButtonHTMLAttributes<any>;
 
 export type ButtonProps = ButtonOptions & ButtonHTMLProps;
 
 export const useButton = createHook<ButtonOptions, ButtonHTMLProps>({
   name: "Button",
-  compose: useTabbable,
+  compose: useClickable,
 
   useProps(_, { ref: htmlRef, ...htmlProps }) {
     const ref = React.useRef<HTMLElement>(null);
@@ -42,12 +42,12 @@ export const useButton = createHook<ButtonOptions, ButtonHTMLProps>({
       ref: useForkRef(ref, htmlRef),
       role,
       type,
-      ...htmlProps
+      ...htmlProps,
     };
-  }
+  },
 });
 
 export const Button = createComponent({
   as: "button",
-  useHook: useButton
+  useHook: useButton,
 });

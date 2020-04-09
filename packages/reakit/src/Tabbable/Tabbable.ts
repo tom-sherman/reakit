@@ -5,6 +5,7 @@ import { useForkRef } from "reakit-utils/useForkRef";
 import { isFocusable } from "reakit-utils/tabbable";
 import { hasFocusWithin } from "reakit-utils/hasFocusWithin";
 import { isButton } from "reakit-utils/isButton";
+import { warning } from "reakit-warning";
 import { BoxOptions, BoxHTMLProps, useBox } from "../Box/Box";
 
 export type TabbableOptions = BoxOptions & {
@@ -18,16 +19,6 @@ export type TabbableOptions = BoxOptions & {
    * `aria-disabled` will be set.
    */
   focusable?: boolean;
-  /**
-   * Whether or not trigger click on pressing <kbd>Enter</kbd>.
-   * @private
-   */
-  unstable_clickOnEnter?: boolean;
-  /**
-   * Whether or not trigger click on pressing <kbd>Space</kbd>.
-   * @private
-   */
-  unstable_clickOnSpace?: boolean;
 };
 
 export type TabbableHTMLProps = BoxHTMLProps & {
@@ -60,23 +51,10 @@ const isSafariOrFirefoxOnMac =
 export const useTabbable = createHook<TabbableOptions, TabbableHTMLProps>({
   name: "Tabbable",
   compose: useBox,
-  keys: [
-    "disabled",
-    "focusable",
-    "unstable_clickOnEnter",
-    "unstable_clickOnSpace"
-  ],
+  keys: ["disabled", "focusable"],
 
-  useOptions(
-    { unstable_clickOnEnter = true, unstable_clickOnSpace = true, ...options },
-    { disabled }
-  ) {
-    return {
-      disabled,
-      unstable_clickOnEnter,
-      unstable_clickOnSpace,
-      ...options
-    };
+  useOptions(options, { disabled }) {
+    return { disabled, ...options };
   },
 
   useProps(
@@ -86,11 +64,9 @@ export const useTabbable = createHook<TabbableOptions, TabbableHTMLProps>({
       tabIndex: htmlTabIndex,
       onClick: htmlOnClick,
       onMouseDown: htmlOnMouseDown,
-      onKeyDown: htmlOnKeyDown,
       style: htmlStyle,
-      "data-tabbable": dataTabbable,
       ...htmlProps
-    }: TabbableHTMLProps & { "data-tabbable"?: boolean }
+    }
   ) {
     const ref = React.useRef<HTMLElement>(null);
     const trulyDisabled = options.disabled && !options.focusable;
@@ -102,7 +78,15 @@ export const useTabbable = createHook<TabbableOptions, TabbableHTMLProps>({
 
     React.useEffect(() => {
       const tabbable = ref.current;
-      if (tabbable && !isNativeTabbable(tabbable)) {
+      if (!tabbable) {
+        warning(
+          true,
+          "Can't determine if the element is a native tabbable element because `ref` wasn't passed to the component.",
+          "See https://reakit.io/docs/tabbable"
+        );
+        return;
+      }
+      if (!isNativeTabbable(tabbable)) {
         setNativeTabbable(false);
       }
     }, []);
@@ -112,9 +96,9 @@ export const useTabbable = createHook<TabbableOptions, TabbableHTMLProps>({
         if (options.disabled) {
           event.stopPropagation();
           event.preventDefault();
-        } else if (htmlOnClick) {
-          htmlOnClick(event);
+          return;
         }
+        htmlOnClick?.(event);
       },
       [options.disabled, htmlOnClick]
     );
@@ -127,13 +111,8 @@ export const useTabbable = createHook<TabbableOptions, TabbableHTMLProps>({
           return;
         }
 
-        if (htmlOnMouseDown) {
-          htmlOnMouseDown(event);
-        }
-
-        if (event.defaultPrevented) {
-          return;
-        }
+        htmlOnMouseDown?.(event);
+        if (event.defaultPrevented) return;
 
         const self = event.currentTarget as HTMLElement;
         const target = event.target as HTMLElement;
@@ -141,7 +120,7 @@ export const useTabbable = createHook<TabbableOptions, TabbableHTMLProps>({
         if (isSafariOrFirefoxOnMac && isButton(self) && self.contains(target)) {
           event.preventDefault();
           const isFocusControl =
-            isFocusable(target) || target instanceof HTMLLabelElement;
+            isFocusable(target) || target.tagName === "LABEL";
           if (!hasFocusWithin(self) || self === target || !isFocusControl) {
             self.focus();
           }
@@ -150,60 +129,20 @@ export const useTabbable = createHook<TabbableOptions, TabbableHTMLProps>({
       [options.disabled, htmlOnMouseDown]
     );
 
-    const onKeyDown = React.useCallback(
-      (event: React.KeyboardEvent) => {
-        if (htmlOnKeyDown) {
-          htmlOnKeyDown(event);
-        }
-
-        if (
-          options.disabled ||
-          isNativeTabbable(event.currentTarget) ||
-          // Native interactive elements don't get clicked on cmd+Enter/Space
-          event.metaKey ||
-          // This will be true if `useTabbable` has already been used.
-          // In this case, we don't want to .click() twice.
-          dataTabbable
-        ) {
-          return;
-        }
-
-        // Per the spec, space only triggers button click on key up.
-        // On key down, it triggers the :active state.
-        // Since we can't mimic this behavior, we trigger click on key down.
-        if (
-          (options.unstable_clickOnEnter && event.key === "Enter") ||
-          (options.unstable_clickOnSpace && event.key === " ")
-        ) {
-          event.preventDefault();
-          (event.target as HTMLElement).click();
-        }
-      },
-      [
-        dataTabbable,
-        options.disabled,
-        options.unstable_clickOnEnter,
-        options.unstable_clickOnSpace,
-        htmlOnKeyDown
-      ]
-    );
-
     return {
       ref: useForkRef(ref, htmlRef),
-      disabled: trulyDisabled,
-      tabIndex: trulyDisabled ? undefined : tabIndex,
-      "aria-disabled": options.disabled,
+      style,
       onClick,
       onMouseDown,
-      onKeyDown,
-      style,
-      "data-tabbable": nativeTabbable ? undefined : true,
-      ...htmlProps
+      "aria-disabled": options.disabled ? true : undefined,
+      disabled: trulyDisabled && nativeTabbable ? true : undefined,
+      tabIndex: !trulyDisabled ? tabIndex : undefined,
+      ...htmlProps,
     };
-  }
+  },
 });
 
 export const Tabbable = createComponent({
-  as: "button",
-  useHook: useTabbable
+  as: "div",
+  useHook: useTabbable,
 });

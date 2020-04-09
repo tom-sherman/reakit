@@ -49,21 +49,20 @@ export const unstable_useId = createHook<
     // or a random string (without Provider).
     const baseId = React.useMemo(() => options.baseId || generateId(), [
       options.baseId,
-      generateId
+      generateId,
     ]);
 
-    const id = options.id || htmlProps.id || `${baseId}${suffix}`;
+    const id = htmlProps.id || options.id || `${baseId}${suffix}`;
 
     return { ...options, id };
   },
 
   useProps(options, htmlProps) {
-    const id = typeof htmlProps.id === "undefined" ? options.id : htmlProps.id;
-    return { ...htmlProps, id };
-  }
+    return { id: options.id, ...htmlProps };
+  },
 });
 
 export const unstable_Id = createComponent({
   as: "div",
-  useHook: unstable_useId
+  useHook: unstable_useId,
 });

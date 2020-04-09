@@ -3,11 +3,14 @@ import { createComponent } from "reakit-system/createComponent";
 import { As, PropsWithAs } from "reakit-utils/types";
 import { createHook } from "reakit-system/createHook";
 import { usePipe } from "reakit-utils/usePipe";
-import { RoverStateReturn, useRoverState } from "../Rover/RoverState";
+import {
+  unstable_CompositeStateReturn as CompositeStateReturn,
+  unstable_useCompositeState as useCompositeState,
+} from "../Composite/CompositeState";
 import {
   unstable_FormGroupOptions,
   unstable_FormGroupHTMLProps,
-  unstable_useFormGroup
+  unstable_useFormGroup,
 } from "./FormGroup";
 import { unstable_useFormState } from "./FormState";
 import { DeepPath } from "./__utils/types";
@@ -31,7 +34,7 @@ export type unstable_FormRadioGroupProps<
   P extends DeepPath<V, P>
 > = unstable_FormRadioGroupOptions<V, P> & unstable_FormRadioGroupHTMLProps;
 
-export const FormRadioGroupContext = React.createContext<RoverStateReturn | null>(
+export const FormRadioGroupContext = React.createContext<CompositeStateReturn | null>(
   null
 );
 
@@ -50,12 +53,11 @@ export const unstable_useFormRadioGroup = createHook<
 
   useProps(options, { wrapElement: htmlWrapElement, ...htmlProps }) {
     const id = getInputId(options.name, options.baseId);
-    const rover = useRoverState({ baseId: id, loop: true });
-    const providerValue = React.useMemo(() => rover, [
-      rover.stops,
-      rover.currentId,
-      rover.unstable_pastId
-    ]);
+    const composite = useCompositeState({ baseId: id, loop: true });
+    const providerValue = React.useMemo(
+      () => composite,
+      Object.values(composite)
+    );
 
     const wrapElement = React.useCallback(
       (element: React.ReactNode) => (
@@ -69,9 +71,9 @@ export const unstable_useFormRadioGroup = createHook<
     return {
       role: "radiogroup",
       wrapElement: usePipe(wrapElement, htmlWrapElement),
-      ...htmlProps
+      ...htmlProps,
     };
-  }
+  },
 }) as <V, P extends DeepPath<V, P>>(
   options: unstable_FormRadioGroupOptions<V, P>,
   htmlProps?: unstable_FormRadioGroupHTMLProps
@@ -79,7 +81,7 @@ export const unstable_useFormRadioGroup = createHook<
 
 export const unstable_FormRadioGroup = (createComponent({
   as: "fieldset",
-  useHook: unstable_useFormRadioGroup
+  useHook: unstable_useFormRadioGroup,
 }) as unknown) as <V, P extends DeepPath<V, P>, T extends As = "fieldset">(
   props: PropsWithAs<unstable_FormRadioGroupOptions<V, P>, T>
 ) => JSX.Element;

@@ -6,13 +6,13 @@ import { useAllCallbacks } from "reakit-utils/useAllCallbacks";
 import {
   unstable_IdGroupOptions,
   unstable_IdGroupHTMLProps,
-  unstable_useIdGroup
+  unstable_useIdGroup,
 } from "../Id/IdGroup";
 import { useDisclosureState, DisclosureStateReturn } from "./DisclosureState";
 import { useWarningIfMultiple } from "./__utils/useWarningIfMultiple";
 import { useSetIsMounted } from "./__utils/useSetIsMounted";
 
-export type DisclosureRegionOptions = unstable_IdGroupOptions &
+export type DisclosureContentOptions = unstable_IdGroupOptions &
   Pick<
     Partial<DisclosureStateReturn>,
     | "visible"
@@ -22,16 +22,16 @@ export type DisclosureRegionOptions = unstable_IdGroupOptions &
     | "unstable_setIsMounted"
   >;
 
-export type DisclosureRegionHTMLProps = unstable_IdGroupHTMLProps;
+export type DisclosureContentHTMLProps = unstable_IdGroupHTMLProps;
 
-export type DisclosureRegionProps = DisclosureRegionOptions &
-  DisclosureRegionHTMLProps;
+export type DisclosureContentProps = DisclosureContentOptions &
+  DisclosureContentHTMLProps;
 
-export const useDisclosureRegion = createHook<
-  DisclosureRegionOptions,
-  DisclosureRegionHTMLProps
+export const useDisclosureContent = createHook<
+  DisclosureContentOptions,
+  DisclosureContentHTMLProps
 >({
-  name: "DisclosureRegion",
+  name: "DisclosureContent",
   compose: unstable_useIdGroup,
   useState: useDisclosureState,
 
@@ -69,7 +69,6 @@ export const useDisclosureRegion = createHook<
     const hidden = !options.visible && !animating;
 
     return {
-      role: "region",
       id: options.baseId,
       className: cx(hiddenClass, htmlClassName),
       onAnimationEnd: useAllCallbacks(onTransitionEnd, htmlOnAnimationEnd),
@@ -80,12 +79,12 @@ export const useDisclosureRegion = createHook<
         : htmlStyle
         ? { style: htmlStyle }
         : {}),
-      ...htmlProps
+      ...htmlProps,
     };
-  }
+  },
 });
 
-export const DisclosureRegion = createComponent({
+export const DisclosureContent = createComponent({
   as: "div",
-  useHook: useDisclosureRegion
+  useHook: useDisclosureContent,
 });
