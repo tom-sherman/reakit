@@ -35,6 +35,4 @@ jobs:
 
 
     - name: Test
-      run:
-        - node -e "console.log('Running tests against React v' + require('react').version)"
-        - yarn test
+      run: node -e "console.log('Running tests against React v' + require('react').version)" && yarn test
